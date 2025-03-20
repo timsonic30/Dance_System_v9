@@ -4,7 +4,8 @@ const router = express.Router();
 const DanceClass = require("../models/danceClass");
 const Teacher = require("../models/teacher");
 const Transaction = require("../models/transaction");
-const Authorization = require("../middlewares/authorization");
+const RoomRental = require("../models/roomRental");
+
 //交給前端class資料
 router.get("/", async (req, res, next) => {
   try {
@@ -52,6 +53,7 @@ router.post("/classCreate", async (req, res, next) => {
     performanceDay,
     img,
   } = req.body;
+  console.log(req.body);
 
   const newDanceClass = new DanceClass({
     code,
@@ -84,8 +86,6 @@ router.post("/classCreate", async (req, res, next) => {
     });
 });
 
-//=======20250314================================
-router.get("/roomRental", (req, res, next) => {});
 //======20250314=15:00=取出DB的schema做form==========
 router.get("/teacherDataEntry", (req, res, next) => {
   const schema = Teacher.schema.paths;
@@ -163,6 +163,68 @@ router.get("/tutor/:id", async (req, res, next) => {
     return res.status(500).send({ error: e.message });
   }
 });
+
+//=============向transaction collection取出某個會員的資料
+router.get("/transaction/:userId", async (req, res, next) => {
+  try {
+    const userId = req.params.userId;
+    const userTransactions = await Transaction.find({ userId: userId }).exec();
+    return res.send({ userTransactions });
+  } catch (e) {
+    console.error("Error during database operation (/:tutorid):", e.message);
+    return res.status(500).send({ error: e.message });
+  }
+});
+
+//=============room rental飛過來的data, 將data加入db裡面
+router.post("/roomRentalRegister", async (req, res) => {
+  try {
+    const { date, TimeRanges, room } = req.body;
+
+    // 構造要保存的資料
+    const rentalData = {
+      roomType: room,
+      date: date,
+      memberId: '67d8d78d044f0146a5232076',
+      contactPerson: 'alpha123',
+      contactEmail: 'beta456@example.com',
+      timeRange: TimeRanges,
+      rentalType: 'Class',
+    };
+
+    // 將資料保存到資料庫
+    const newRental = new RoomRental(rentalData);
+    const savedRental = await newRental.save();
+
+    console.log('Rental data saved:', savedRental);
+
+    // 回應成功
+    res.status(201).send({ response: 'ok', data: savedRental });
+  } catch (error) {
+    console.error('Error saving rental data:', error);
+    res.status(500).send({ error: 'Failed to save rental data.' });
+  }
+});
+
+
+//=======用日子去 room rental db check有無空房====
+router.post("/roomRentalCheck", async (req, res) => {
+  try {
+    // 從請求中提取日期
+    const { date } = req.body;
+    console.log("Received Date:", date);
+    let checkDay = await RoomRental.find({ date: date }).exec();
+    console.log(checkDay);
+    // 回傳查找結果（這裡僅回傳示例訊息）
+    res.status(200).json({ message: "Data received successfully", checkDay });
+  } catch (error) {
+    console.error("Error processing request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+
 //========向danceClass collection取出某個老師的課程
 router.get("/:tutorid", async (req, res, next) => {
   try {
@@ -174,46 +236,5 @@ router.get("/:tutorid", async (req, res, next) => {
     return res.status(500).send({ error: e.message });
   }
 });
-//=============向transaction collection取出某個會員的資料
-// router.get("/transaction/:userId", async (req, res, next) => {
-//   try {
-//     const userId = req.params.userId;
-//     const userTransactions = await Transaction.find({ userId: userId }).exec();
-//     return res.send({ userTransactions });
-//   } catch (e) {
-//     console.error("Error during database operation (/:tutorid):", e.message);
-//     return res.status(500).send({ error: e.message });
-//   }
-// });
 
-router.post("/transaction", Authorization, async (req, res, next) => {
-  try {
-    const userId = req.body.objectId;
-    console.log(userId);
-    const userTransactions = await Transaction.find({ userId: userId }).exec();
-    return res.send({ userTransactions });
-  } catch (e) {
-    console.error("Error during database operation (/:tutorid):", e.message);
-    return res.status(500).send({ error: e.message });
-  }
-});
-
-router.delete("/transactionDelete/:id", async (req, res, next) => {
-  try {
-    const transactionId = req.params.id;
-    const deletedDoc = await Transaction.findByIdAndDelete(
-      transactionId
-    ).exec();
-    console.log("刪除完畢, 資料是:"); // 確認刪除成功
-    console.log(deletedDoc); // 確認刪除成功
-    res.send({ response: "ok", deletedDoc }); // 回傳成功訊息
-  } catch (e) {
-    console.error("刪除失敗，錯誤訊息:", e); // 捕捉錯誤並回傳錯誤訊息
-    res.status(500).send({ response: "error" });
-  }
-});
-
-//export此module到index.js
-//index.js要用const danceClass = require("./routes/danceClass");接收
-//index.js要用app.use("/danceClass", danceclass);將request轉過來
 module.exports = router;
