@@ -1,0 +1,73 @@
+/* components/Calendar.css */
+
+/* CSS FOR calendar */
+:root {
+  --numDays: 7;
+  --numHours: 16;
+  --timeHeight: 60px;
+  --calBgColor: #fff1f8;
+  --eventBorderColor: #f2d3d8;
+}
+
+.calendar {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto 1fr;
+  margin: 2rem;
+}
+
+.controls {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+#calendarHeader {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.days {
+  display: grid;
+  grid-column: 2;
+  gap: 5px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.events {
+  display: grid;
+  border-radius: 5px;
+  background: var(--calBgColor);
+}
+
+.event {
+  border: 1px solid var(--eventBorderColor);
+  border-radius: 5px;
+  padding: 0.5rem;
+  margin: 5px;
+  background-color: white;
+}
+
+.date {
+  font-weight: bold;
+  display: flex;
+  gap: 1em;
+}
+
+.title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.date-num {
+  font-size: 3rem;
+  font-weight: 600;
+  display: inline;
+}
+
+.date-day {
+  display: inline;
+  font-size: 3rem;
+  font-weight: 100;
+}
