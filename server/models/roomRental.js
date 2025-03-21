@@ -71,5 +71,5 @@ const roomRentalSchema = new Schema({
 
   const RoomRental = mongoose.model("RoomRental", roomRentalSchema);
   
-  module.exports = Transaction;
+  module.exports = RoomRental;
   
